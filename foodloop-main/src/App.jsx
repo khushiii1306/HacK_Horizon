@@ -241,7 +241,7 @@ function WelcomePage({ onStart }) {
   );
 }
 
-function LandingPage({ onNav }) {
+function LandingPage({ navigate }) {
   const steps = [
     { icon:"📤", label:"Khana Upload Karo", bg:"#dcfce7" },
     { icon:"🧠", label:"AI Taazgi Engine", bg:"#dbeafe" },
@@ -258,9 +258,9 @@ function LandingPage({ onNav }) {
         <h1>KHANA BAANT KAR KHAYE, <span>SABKI DUAAYIEN PAYE</span></h1>
         <p>AI-powered matching aur smart routing se needy logo tak khana pohunchata hai — waste kam, samaj ko khana, real-time impact.</p>
         <div className="hero-ctas">
-          <button className="btn-primary" onClick={() => onNav("provider")}>🍽️ I'm a Food Provider</button>
-          <button className="btn-outline" onClick={() => onNav("recipient")}>🤲 Find Food Near Me</button>
-          <button className="btn-outline" onClick={() => onNav("volunteer")}>🚴 Join as Volunteer</button>
+          <button className="btn-primary" onClick={() => navigate("provider")}>🍽️ I'm a Food Provider</button>
+          <button className="btn-outline" onClick={() => navigate("recipient")}>🤲 Find Food Near Me</button>
+          <button className="btn-outline" onClick={() => navigate("volunteer")}>🚴 Join as Volunteer</button>
         </div>
       </div>
       <div className="metrics-strip">
@@ -350,8 +350,8 @@ function LandingPage({ onNav }) {
         <div style={{ fontSize:28, fontWeight:700, color:"#fff", marginBottom:16 }}>Apne Shehar Mein Khana Bachana Hai?</div>
         <div style={{ fontSize:16, color:"#86efac", marginBottom:32, fontWeight:500 }}>1,200+ providers, NGOs aur volunteers ANNADATA par pehle se hain</div>
         <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
-          <button className="btn-primary" onClick={() => onNav("provider")} style={{ background:"#22c55e" }}>Shukriya Start Karo</button>
-          <button style={{ background:"transparent", color:"#86efac", border:"2px solid #86efac", padding:"12px 28px", borderRadius:10, cursor:"pointer", fontSize:15, fontWeight:600 }} onClick={() => onNav("impact")}>Impact Dekho</button>
+          <button className="btn-primary" onClick={() => navigate("provider")} style={{ background:"#22c55e" }}>Shukriya Start Karo</button>
+          <button style={{ background:"transparent", color:"#86efac", border:"2px solid #86efac", padding:"12px 28px", borderRadius:10, cursor:"pointer", fontSize:15, fontWeight:600 }} onClick={() => navigate("impact")}>Impact Dekho</button>
         </div>
       </div>
     </div>
@@ -1128,7 +1128,7 @@ export default function App() {
 
   return (
     <>
-      <style>{styles}</style>
+      
       <div className="app">
         {page !== "welcome" && (
           <nav className="nav">
@@ -1148,7 +1148,7 @@ export default function App() {
           </nav>
         )}
         {page === "welcome" && <WelcomePage onStart={startFromWelcome} />}
-        {page === "home" && <LandingPage onNav={navTo} />}
+        {page === "home" && <LandingPage onClick={navTo} />}
         {page === "dashboard" && role === "provider" && <ProviderDashboard />}
         {page === "dashboard" && role === "recipient" && <RecipientDashboard />}
         {page === "dashboard" && role === "volunteer" && <VolunteerDashboard />}
