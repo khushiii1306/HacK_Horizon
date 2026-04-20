@@ -155,3 +155,48 @@
   .welcome-menu { display: none; }
   .welcome-btn { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: #fff; padding: 16px 48px; border-radius: 12px; border: none; cursor: pointer; font-size: 16px; font-weight: 700; font-family: 'Poppins', sans-serif; transition: all 0.2s ease; margin-top: 40px; text-transform: uppercase; letter-spacing: 0.5px; }
   .welcome-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(22,163,74,0.4); }
+
+/* --- DARK MODE SETTINGS --- */
+.dark.app { background: #121212 !important; color: #eee !important; }
+.dark .nav { background: #1a1a1a !important; border-bottom: 1px solid #333 !important; }
+.dark .nav-btn { color: #bbb !important; }
+.dark .nav-btn:hover, .dark .nav-btn.active { background: #333 !important; color: #4ade80 !important; }
+.dark .sidebar, .dark .card, .dark .form-card, .dark .route-card, .dark .stat-card, .dark .chart-card, .dark .impact-card { background: #1f1f1f !important; border-color: #333 !important; box-shadow: none !important; }
+.dark .main-content { background: #121212 !important; }
+.dark h1, .dark .page-title, .dark .section-title, .dark .form-title, .dark .card-title, .dark .stat-val, .dark .impact-num, .dark .welcome-greeting { color: #fff !important; }
+.dark p, .dark .page-sub, .dark .section-sub, .dark .card-text, .dark .stat-label, .dark .impact-label, .dark .welcome-subtext { color: #aaa !important; }
+.dark .metrics-strip { background: #1a1a1a !important; border-color: #333 !important; }
+.dark .metric-item { border-color: #333 !important; }
+.dark .metric-num { color: #4ade80 !important; }
+.dark .btn-outline { background: transparent !important; color: #4ade80 !important; border-color: #4ade80 !important; }
+.dark .btn-outline:hover { background: rgba(74, 222, 128, 0.1) !important; }
+.dark .hero { background: linear-gradient(135deg, #111827 0%, #064e3b 50%, #111827 100%) !important; }
+.dark .welcome-page { background: linear-gradient(135deg, rgba(17,24,39,0.95), rgba(6,78,59,0.95), rgba(17,24,39,0.95)) !important; }
+.dark .hero-badge { background: rgba(22, 163, 74, 0.2) !important; border-color: #333 !important; color: #4ade80 !important; }
+.dark .sidebar-item { color: #bbb !important; }
+.dark .sidebar-item:hover, .dark .sidebar-item.active { background: #333 !important; color: #4ade80 !important; }
+.dark .form-input, .dark .form-select { background: #2a2a2a !important; border-color: #444 !important; color: #eee !important; }
+.dark .form-input:focus { border-color: #4ade80 !important; }
+.dark .toggle-btn { background: #2a2a2a !important; border-color: #444 !important; color: #bbb !important; }
+.dark .toggle-btn.selected { background: #16a34a !important; border-color: #16a34a !important; color: #fff !important; }
+.dark .pill { background: #2a2a2a !important; border-color: #444 !important; color: #bbb !important; }
+.dark .pill.active { background: #16a34a !important; color: #fff !important; }
+.dark .listing-card { background: #1f1f1f !important; border-color: #333 !important; }
+.dark .listing-name { color: #eee !important; }
+.dark .listing-meta { color: #888 !important; }
+.dark .listing-thumb { background: #2a2a2a !important; border: 1px solid #444; }
+.dark .escore, .dark .ai-card, .dark .map-placeholder { background: rgba(22, 163, 74, 0.1) !important; border-color: #16a34a !important; }
+.dark .ai-card::before { background: #16a34a !important; color: #fff !important; }
+.dark .ai-badge { background: rgba(22, 163, 74, 0.2) !important; color: #4ade80 !important; }
+.dark .badges .badge-green { background: rgba(22, 163, 74, 0.2) !important; color: #4ade80 !important; }
+.dark .badges .badge-amber { background: rgba(217, 119, 6, 0.2) !important; color: #fcd34d !important; }
+.dark .badges .badge-red { background: rgba(220, 38, 38, 0.2) !important; color: #fca5a5 !important; }
+.dark .badges .badge-blue { background: rgba(37, 99, 235, 0.2) !important; color: #93c5fd !important; }
+.dark .match-row { background: #2a2a2a !important; border-color: #444 !important; }
+.dark .match-avatar { background: #333 !important; color: #4ade80 !important; }
+.dark .leaderboard-row { border-color: #333 !important; }
+.dark .tabs { background: #1f1f1f !important; }
+.dark .tab.active { background: #333 !important; color: #4ade80 !important; }
+.dark .upload-zone { background: #1f1f1f !important; border-color: #16a34a !important; }
+.dark .qr-box { background: #1f1f1f !important; border-color: #333 !important; }
+.dark .qr-inner { filter: invert(0.8); }

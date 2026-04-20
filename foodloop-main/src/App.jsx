@@ -358,6 +358,49 @@ function LandingPage({ navigate }) {
   );
 }
 
+function LocationPicker({ onLocationPicked }) {
+  const mapRef = useRef(null);
+  const mapInstance = useRef(null);
+  const [picked, setPicked] = useState(false);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const map = L.map(mapRef.current).setView([23.7957, 86.4304], 14);
+    
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+    }).addTo(map);
+
+    let marker;
+
+    map.on('click', function(e) {
+      if (marker) {
+        map.removeLayer(marker);
+      }
+      marker = L.marker(e.latlng).addTo(map);
+      setPicked(true);
+      if (onLocationPicked) onLocationPicked(e.latlng);
+    });
+
+    // Make it look interactive initially by faking a bounce
+    setTimeout(() => { map.invalidateSize(); }, 200);
+
+    mapInstance.current = map;
+    return () => mapInstance.current?.remove();
+  }, [onLocationPicked]);
+
+  return (
+    <div style={{ position: 'relative', height: "200px", marginBottom: "16px", borderRadius: "12px", overflow: 'hidden', border: "1px solid #bbf7d0" }}>
+      <div ref={mapRef} style={{ height: "100%", width: "100%", zIndex: 1 }} />
+      {!picked && (
+        <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', background: 'rgba(255,255,255,0.95)', padding: '8px 14px', borderRadius: '8px', zIndex: 1000, textAlign: 'center', fontSize: '12px', fontWeight: 700, color: '#15803d', border: '1px solid #16a34a', whiteSpace: 'nowrap', pointerEvents: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+          📍 Tap map to pin pickup location
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ProviderDashboard() {
   const [tab, setTab] = useState("upload");
   const [veg, setVeg] = useState("veg");
@@ -369,6 +412,13 @@ function ProviderDashboard() {
   const [freshScore, setFreshScore] = useState(78);
   const [location, setLocation] = useState("Jamshedpur, JH");
   const [submitted, setSubmitted] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState(null);
+
+  const handlePhoto = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setPhotoUrl(URL.createObjectURL(e.target.files[0]));
+    }
+  };
 
   const calcScore = () => {
     const now = new Date();
@@ -508,11 +558,7 @@ function ProviderDashboard() {
                 </div>
                 <div className="form-card">
                   <div className="form-title">📍 Pickup & Listing Type</div>
-                  <div className="map-placeholder" style={{ marginBottom:16 }}>
-                    <div className="map-pin">📍</div>
-                    <span>Tap to pin pickup location</span>
-                    <span style={{ fontSize:11, color:"#6b7b6b" }}>Jamshedpur, Jharkhand</span>
-                  </div>
+                  <LocationPicker />
                   <div>
                     <label className="form-label" style={{ display:"block", marginBottom:8 }}>Listing Type</label>
                     <div className="toggle-group">
@@ -529,11 +575,18 @@ function ProviderDashboard() {
                   )}
                   <div style={{ marginTop:16 }}>
                     <label className="form-label" style={{ display:"block", marginBottom:8 }}>Upload Food Photo</label>
-                    <div className="upload-zone">
-                      <div style={{ fontSize:32 }}>📷</div>
-                      <div style={{ fontSize:13, color:"#4b5e4b", marginTop:8, fontWeight:600 }}>Click to upload or drag image here</div>
-                      <div style={{ fontSize:11, color:"#9cad9c", marginTop:4 }}>JPG, PNG up to 5MB</div>
-                    </div>
+                    <label className="upload-zone" style={{ display: "block", overflow: "hidden", padding: photoUrl ? 0 : 24 }}>
+                      <input type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={handlePhoto} />
+                      {photoUrl ? (
+                         <img src={photoUrl} alt="Food preview" style={{ width: "100%", height: "200px", objectFit: "cover", display: "block" }} />
+                      ) : (
+                        <>
+                          <div style={{ fontSize:32 }}>📷</div>
+                          <div style={{ fontSize:13, color:"#4b5e4b", marginTop:8, fontWeight:600 }}>Tap to open Camera or Upload</div>
+                          <div style={{ fontSize:11, color:"#9cad9c", marginTop:4 }}>JPG, PNG up to 5MB</div>
+                        </>
+                      )}
+                    </label>
                   </div>
                   <div style={{ marginTop:16 }}>
                     <div style={{ background:"#fef3c7", border:"1px solid #fde68a", borderRadius:10, padding:14 }}>
@@ -545,7 +598,9 @@ function ProviderDashboard() {
                       ))}
                     </div>
                   </div>
-                  <button className="btn-primary" style={{ marginTop:20, width:"100%", padding:"13px" }} onClick={() => setSubmitted(true)}>
+                  <button className="btn-primary" style={{ marginTop:20, width:"100%", padding:"13px" }} onClick={() => {
+                    if (window.confirm("Publish and start AI matching for this listing?")) setSubmitted(true);
+                  }}>
                     🚀 Submit Listing — AI Matching Will Begin
                   </button>
                 </div>
@@ -637,6 +692,19 @@ function ProviderAnalytics() {
 }
 
 function ESGPanel() {
+  const handleDownload = () => {
+    const certText = `CSR Certificate - April 2026\n\nCertifies: Spice Garden Restaurant\nImpact: 142 kg food rescued, 284 meals served, 56 kg CO2 prevented.\nESG Score: 87\n\nThank you for your contribution to Annadata!`;
+    const blob = new Blob([certText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Annadata_CSR_Certificate_April_2026.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <>
       <div className="page-header"><div className="page-title">ESG Impact Score</div></div>
@@ -660,11 +728,11 @@ function ESGPanel() {
           <div style={{ flex:1 }}>
             <div style={{ fontSize:14, fontWeight:600, marginBottom:4 }}>April 2026 CSR Certificate</div>
             <div style={{ fontSize:12, color:"#6b7b6b", marginBottom:12 }}>Certifies 142 kg food rescued, 284 meals served, 56 kg CO₂ prevented</div>
-            <button className="btn-primary" style={{ fontSize:13, padding:"8px 18px" }}>⬇️ Download PDF Certificate</button>
+            <button className="btn-primary" style={{ fontSize:13, padding:"8px 18px" }} onClick={handleDownload}>⬇️ Download PDF Certificate</button>
           </div>
-          <div className="qr-box" style={{ minWidth:120 }}>
-            <div className="qr-inner" />
-            <div style={{ fontSize:10, color:"#6b7b6b", marginTop:4 }}>Scan to verify</div>
+          <div className="qr-box" style={{ minWidth:120, padding: 12 }}>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=CSR-April-2026" alt="QR" style={{ width:100, height:100, margin:"0 auto", display:"block", borderRadius:8 }} />
+            <div style={{ fontSize:10, color:"#6b7b6b", marginTop:8 }}>Scan to verify</div>
           </div>
         </div>
       </div>
@@ -728,12 +796,71 @@ function LiveMap() {
   );
 }
 
+function LiveRouteMap({ waypoints }) {
+  const mapRef = useRef(null);
+  const mapInstance = useRef(null);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const map = L.map(mapRef.current);
+    
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap",
+      maxZoom: 19,
+    }).addTo(map);
+
+    const latlngs = waypoints.map(w => w.coords);
+    L.polyline(latlngs, { color: '#3b82f6', weight: 4, dashArray: '8 8' }).addTo(map);
+
+    waypoints.forEach((w, i) => {
+      const color = w.type === 'pickup' ? '#ef4444' : w.type === 'drop' ? '#16a34a' : '#f97316';
+      const label = w.type === 'driver' ? '🚴' : (i + 1);
+      const customIcon = L.divIcon({
+        html: `<div style="background:${color};color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.2)">${label}</div>`,
+        className: "", iconSize: [28, 28], iconAnchor: [14, 14]
+      });
+      L.marker(w.coords, { icon: customIcon }).bindPopup(`<b>${w.name}</b><br/>${w.type}`).addTo(map);
+    });
+
+    if (latlngs.length > 0) {
+       map.fitBounds(L.latLngBounds(latlngs), { padding: [20, 20], maxZoom: 15 });
+    } else {
+       map.setView([23.7957, 86.4304], 14);
+    }
+
+    mapInstance.current = map;
+    return () => mapInstance.current?.remove();
+  }, [waypoints]);
+
+  return <div ref={mapRef} style={{ height: "100%", width: "100%", zIndex: 1 }} />;
+}
+
 function RecipientDashboard() {
   const [tab, setTab] = useState("discover");
   const [filter, setFilter] = useState("all");
   const [selected, setSelected] = useState(null);
   const [reserved, setReserved] = useState(false);
   const [slot, setSlot] = useState("6:00 PM");
+
+  const [myBookings, setMyBookings] = useState([
+     { icon: "🍛", name: "Biryani (Veg)", org: "Spice Garden Restaurant", expected: "Apr 18 · 6:00 PM", status: "Collected", color: "badge-green" },
+     { icon: "🍞", name: "Bread Loaves x4", org: "Baker Street Bakery", expected: "Yesterday · 5:30 PM", status: "Collected", color: "badge-green" },
+     { icon: "🥗", name: "Fresh Salad Box", org: "GreenBite Café", expected: "Apr 8 · 7:00 PM", status: "Cancelled", color: "badge-red" }
+  ]);
+
+  const handleReserve = () => {
+    if (window.confirm("Reserve this food for your shelter?")) {
+      setReserved(true);
+      setMyBookings(prev => [{
+        icon: selected.icon,
+        name: selected.name,
+        org: selected.org,
+        expected: `Today · ${slot}`,
+        status: "Active Tracking",
+        color: "badge-amber"
+      }, ...prev]);
+    }
+  };
 
   const filtered = filter === "all" ? LISTINGS : filter === "veg" ? LISTINGS.filter(l => l.veg) : filter === "free" ? LISTINGS.filter(l => l.type === "Donation") : LISTINGS.filter(l => l.type === "Sale");
 
@@ -831,7 +958,7 @@ function RecipientDashboard() {
                   ))}
                 </div>
               </div>
-              <button className="btn-primary" style={{ marginTop:20, width:"100%", padding:13 }} onClick={() => setReserved(true)}>
+              <button className="btn-primary" style={{ marginTop:20, width:"100%", padding:13 }} onClick={handleReserve}>
                 ✅ Reserve & Confirm Pickup at {slot}
               </button>
             </div>
@@ -842,10 +969,10 @@ function RecipientDashboard() {
             <div style={{ fontSize:64, marginBottom:12 }}>🎉</div>
             <div style={{ fontSize:22, fontWeight:700, color:"#14532d", marginBottom:8 }}>Booking Confirmed!</div>
             <div style={{ fontSize:14, color:"#6b7b6b", marginBottom:24 }}>{selected.name} · Pickup at {slot}</div>
-            <div className="qr-box" style={{ maxWidth:160, margin:"0 auto 20px" }}>
+            <div className="qr-box" style={{ maxWidth:160, margin:"0 auto 20px", padding: 12 }}>
               <div style={{ fontSize:12, fontWeight:700, color:"#15803d", marginBottom:8 }}>Booking ID: #FL-2847</div>
-              <div className="qr-inner" />
-              <div style={{ fontSize:10, color:"#6b7b6b", marginTop:6 }}>Show QR at pickup</div>
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=Booking-FL2847" alt="QR" style={{ width:100, height:100, margin:"0 auto", display:"block", borderRadius:8 }} />
+              <div style={{ fontSize:10, color:"#6b7b6b", marginTop:8 }}>Show QR at pickup</div>
             </div>
             <button className="btn-outline" onClick={() => { setTab("tracking"); setSelected(null); setReserved(false); }}>Track Live → </button>
           </div>
@@ -853,13 +980,17 @@ function RecipientDashboard() {
         {tab === "bookings" && (
           <>
             <div className="page-header"><div className="page-title">My Bookings</div></div>
-            {[["🍛","Biryani (Veg)","Today · 6:00 PM","Collected","badge-green"],["🍞","Bread Loaves x4","Yesterday · 5:30 PM","Collected","badge-green"],["🥗","Fresh Salad Box","Apr 8 · 7:00 PM","Cancelled","badge-red"]].map(([icon,name,time,status,cls]) => (
-              <div key={name} className="listing-card" style={{ marginBottom:10 }}>
-                <div className="listing-thumb">{icon}</div>
+            {myBookings.length === 0 && <div style={{textAlign: "center", padding: "40px", color: "#6b7b6b"}}>No bookings yet. Start discovering food! 🍛</div>}
+            {myBookings.map((b, i) => (
+              <div key={i} className="listing-card" style={{ marginBottom: 10 }}>
+                <div className="listing-thumb">{b.icon}</div>
                 <div className="listing-info">
-                  <div className="listing-name">{name}</div>
-                  <div className="listing-meta">{time}</div>
-                  <div className="badges"><span className={`badge ${cls}`}>{status}</span></div>
+                  <div className="listing-name">{b.name}</div>
+                  <div className="listing-meta">{b.org}</div>
+                  <div className="listing-meta" style={{ fontSize:11, color:"#6b7b6b", marginTop:4 }}>Pickup: {b.expected}</div>
+                </div>
+                <div style={{ textAlign:"right" }}>
+                  <span className={`badge ${b.color}`}>{b.status}</span>
                 </div>
               </div>
             ))}
@@ -894,21 +1025,21 @@ function TrackingView() {
     { label:"In Transit", time:"5:58 PM", done:status >= 3 },
     { label:"Delivered / Collected", time:"6:04 PM", done:status >= 4 },
   ];
+  
+  const waypoints = [
+    { coords: [23.795, 86.430], name: "Provider", type: "pickup" },
+    { coords: [23.810, 86.440], name: "You (Recipient)", type: "drop" }
+  ];
+  if (status >= 2 && status < 4) {
+    waypoints.splice(1, 0, { coords: [23.805, 86.435], name: "Driver", type: "driver" });
+  }
+
   return (
     <>
       <div className="page-header"><div className="page-title">Live Tracking</div><div className="page-sub">Booking #FL-2847 · Biryani (Veg)</div></div>
       <div className="route-card">
-        <div className="route-map">
-          <svg viewBox="0 0 340 160" className="route-svg">
-            <circle cx="60" cy="120" r="10" fill="#16a34a" />
-            <text x="60" y="148" textAnchor="middle" fontSize="10" fill="#15803d" fontWeight="600">Provider</text>
-            <circle cx="280" cy="60" r="10" fill="#3b82f6" />
-            <text x="280" y="88" textAnchor="middle" fontSize="10" fill="#1d4ed8" fontWeight="600">You</text>
-            <path d="M60 120 Q120 80 180 100 Q230 115 280 60" stroke="#16a34a" strokeWidth="3" fill="none" strokeDasharray="6 3" />
-            <circle cx={status >= 3 ? 180 : 120} cy={status >= 3 ? 100 : 95} r="8" fill="#f97316" />
-            <text x={status >= 3 ? 180 : 120} y={status >= 3 ? 90 : 85} textAnchor="middle" fontSize="9" fill="#c2410c" fontWeight="700">🚴</text>
-            <text x="170" y="145" textAnchor="middle" fontSize="10" fill="#6b7b6b">Priority Route · ETA {status >= 3 ? "4" : "8"} min</text>
-          </svg>
+        <div className="route-map" style={{ padding: 0 }}>
+           <LiveRouteMap waypoints={waypoints} />
         </div>
         <div style={{ display:"flex", gap:8, margin:"16px 0 8px" }}>
           {steps.map((s,i) => (
@@ -935,6 +1066,20 @@ function TrackingView() {
 
 function VolunteerDashboard() {
   const [tab, setTab] = useState("tasks");
+  const [availableTasks, setAvailableTasks] = useState([
+    { id: 1, from:"Spice Garden Restaurant", to:"Annapurna Shelter", dist:"0.8 km", urgency:"High", food:"Biryani (Veg) · 8 portions", time:"Before 6:30 PM", color:"#fee2e2", badge:"badge-red" },
+    { id: 2, from:"Baker Street Bakery", to:"Jamshedpur Food Bank", dist:"1.4 km", urgency:"Medium", food:"Bread Loaves x4", time:"Before 7:00 PM", color:"#fef3c7", badge:"badge-amber" },
+    { id: 3, from:"GreenBite Café", to:"Student Hub IISM", dist:"2.2 km", urgency:"Low", food:"Fresh Salad Box · 12 boxes", time:"Before 8:00 PM", color:"#dcfce7", badge:"badge-green" },
+  ]);
+  const [routeTasks, setRouteTasks] = useState([]);
+
+  const handleAccept = (task) => {
+    if (window.confirm("Accept this delivery priority task?")) {
+      setAvailableTasks(prev => prev.filter(t => t.id !== task.id));
+      setRouteTasks(prev => [...prev, task]);
+      setTab("route");
+    }
+  };
   return (
     <div className="dashboard">
       <div className="sidebar">
@@ -961,12 +1106,9 @@ function VolunteerDashboard() {
                 <div key={l} className="stat-card"><div className="stat-val">{v}</div><div className="stat-label">{l}</div></div>
               ))}
             </div>
-            {[
-              { from:"Spice Garden Restaurant", to:"Annapurna Shelter", dist:"0.8 km", urgency:"High", food:"Biryani (Veg) · 8 portions", time:"Before 6:30 PM", color:"#fee2e2", badge:"badge-red" },
-              { from:"Baker Street Bakery", to:"Jamshedpur Food Bank", dist:"1.4 km", urgency:"Medium", food:"Bread Loaves x4", time:"Before 7:00 PM", color:"#fef3c7", badge:"badge-amber" },
-              { from:"GreenBite Café", to:"Student Hub IISM", dist:"2.2 km", urgency:"Low", food:"Fresh Salad Box · 12 boxes", time:"Before 8:00 PM", color:"#dcfce7", badge:"badge-green" },
-            ].map((task,i) => (
-              <div key={i} className="form-card" style={{ borderLeft:`4px solid ${task.urgency==="High"?"#ef4444":task.urgency==="Medium"?"#d97706":"#16a34a"}`, marginBottom:12 }}>
+            {availableTasks.length === 0 && <div style={{textAlign: "center", padding: "40px", color: "#6b7b6b"}}>No more tasks left! Give yourself a break. 🥤</div>}
+            {availableTasks.map((task,i) => (
+              <div key={task.id} className="form-card" style={{ borderLeft:`4px solid ${task.urgency==="High"?"#ef4444":task.urgency==="Medium"?"#d97706":"#16a34a"}`, marginBottom:12 }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                   <div>
                     <div style={{ fontSize:14, fontWeight:700, color:"#1a2e1a", marginBottom:4 }}>{task.food}</div>
@@ -977,7 +1119,7 @@ function VolunteerDashboard() {
                       <span className="badge badge-blue">⏰ {task.time}</span>
                     </div>
                   </div>
-                  <button className="btn-primary" style={{ fontSize:12, padding:"8px 14px", whiteSpace:"nowrap" }}>Accept Task</button>
+                  <button className="btn-primary" onClick={() => handleAccept(task)} style={{ fontSize:12, padding:"8px 14px", whiteSpace:"nowrap" }}>Accept Task</button>
                 </div>
               </div>
             ))}
@@ -987,19 +1129,12 @@ function VolunteerDashboard() {
           <>
             <div className="page-header"><div className="page-title">Optimized Route</div></div>
             <div className="route-card">
-              <div className="route-map">
-                <svg viewBox="0 0 340 160" className="route-svg">
-                  {[[60,130,"A","#ef4444"],[160,80,"B","#d97706"],[280,50,"C","#16a34a"]].map(([x,y,l,c]) => (
-                    <g key={l}>
-                      <circle cx={x} cy={y} r={12} fill={c} />
-                      <text x={x} y={y+5} textAnchor="middle" fontSize="12" fill="white" fontWeight="700">{l}</text>
-                    </g>
-                  ))}
-                  <path d="M60 130 Q110 100 160 80" stroke="#ef4444" strokeWidth="3" fill="none" strokeDasharray="5 3" />
-                  <path d="M160 80 Q220 65 280 50" stroke="#d97706" strokeWidth="3" fill="none" strokeDasharray="5 3" />
-                  <circle cx="80" cy="120" r="7" fill="#f97316" />
-                  <text x="170" y="148" textAnchor="middle" fontSize="10" fill="#6b7b6b">Total: 2.2 km · ETA 18 min · 3 stops</text>
-                </svg>
+              <div className="route-map" style={{ padding: 0 }}>
+                <LiveRouteMap waypoints={[
+                  { coords: [23.795, 86.430], name: "Pickup Point", type: "pickup" },
+                  { coords: [23.800, 86.435], name: "Drop #1", type: "drop" },
+                  { coords: [23.810, 86.440], name: "Drop #2", type: "drop" }
+                ]} />
               </div>
               <div style={{ marginTop:16 }}>
                 {[["A","Spice Garden Restaurant","Pickup","#ef4444"],["B","Annapurna Shelter","Drop #1","#d97706"],["C","Student Hub IISM","Drop #2","#16a34a"]].map(([l,n,t,c]) => (
@@ -1011,6 +1146,30 @@ function VolunteerDashboard() {
                 ))}
               </div>
             </div>
+          </>
+        )}
+        {tab === "completed" && (
+          <>
+            <div className="page-header"><div className="page-title">Completed Deliveries</div></div>
+            {[
+              { id: 101, from: "Home Cooks Network", to: "Local Orphanage", date: "Today · 2:15 PM", kg: "4 kg", status: "Delivered", badge: "badge-green" },
+              { id: 102, from: "Spice Garden", to: "Annapurna Shelter", date: "Yesterday · 6:30 PM", kg: "8 kg", status: "Delivered", badge: "badge-green" },
+              { id: 103, from: "GreenBite Café", to: "City Center Street", date: "Apr 15 · 8:00 PM", kg: "12 kg", status: "Delivered", badge: "badge-green" }
+            ].map(task => (
+              <div key={task.id} className="form-card" style={{ borderLeft: "4px solid #16a34a", marginBottom: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#1a2e1a", marginBottom: 2 }}>📍 {task.from}</div>
+                    <div style={{ fontSize: 13, color: "#6b7b6b", marginBottom: 8 }}>✅ {task.to}</div>
+                    <span className={`badge ${task.badge}`}>{task.status} · {task.kg} rescued</span>
+                  </div>
+                  <div style={{ fontSize: 11, color: "#9cad9c", textAlign: "right" }}>
+                    <div>{task.date}</div>
+                    <div style={{ fontSize: 24, marginTop: 4 }}>📦</div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </>
         )}
         {tab === "leaderboard" && (
@@ -1106,6 +1265,7 @@ function ImpactDashboard() {
 export default function App() {
   const [page, setPage] = useState("welcome");
   const [role, setRole] = useState("provider");
+  const [theme, setTheme] = useState("light");
 
   const navTo = (p) => {
     if (p === "provider" || p === "recipient" || p === "volunteer") {
@@ -1128,8 +1288,7 @@ export default function App() {
 
   return (
     <>
-      
-      <div className="app">
+      <div className={`app ${theme}`}>
         {page !== "welcome" && (
           <nav className="nav">
             <div className="nav-inner">
@@ -1143,12 +1302,17 @@ export default function App() {
                 <button className={`nav-btn ${page==="dashboard"&&role==="volunteer"?"active":""}`} onClick={() => navTo("volunteer")}>Volunteer</button>
                 <button className={`nav-btn ${page==="impact"?"active":""}`} onClick={() => setPage("impact")}>Impact</button>
               </div>
-              <button className="nav-cta" onClick={() => navTo("provider")}>+ List Surplus</button>
+              <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                <button className="nav-btn" onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')} style={{ fontWeight: 600 }}>
+                  {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+                </button>
+                <button className="nav-cta" onClick={() => navTo("provider")}>+ List Surplus</button>
+              </div>
             </div>
           </nav>
         )}
         {page === "welcome" && <WelcomePage onStart={startFromWelcome} />}
-        {page === "home" && <LandingPage onClick={navTo} />}
+        {page === "home" && <LandingPage navigate={navTo} />}
         {page === "dashboard" && role === "provider" && <ProviderDashboard />}
         {page === "dashboard" && role === "recipient" && <RecipientDashboard />}
         {page === "dashboard" && role === "volunteer" && <VolunteerDashboard />}
